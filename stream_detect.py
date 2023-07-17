@@ -19,9 +19,11 @@ signal.signal(signal.SIGALRM, timeout_handler)
 # termination criteria
 criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
+CHECKERBOARD = (5, 7)
+
 # prepare object points
-objp = np.zeros((6*7, 3), np.float32)
-objp[:, :2] = np.mgrid[0:7, 0:6].T.reshape(-1,2)
+objp = np.zeros((1, CHECKERBOARD[0] * CHECKERBOARD[1], 3), np.float32)
+objp[0,:,:2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2)
 
 # arrays to store object points and image points from image
 objpoints = [] # 3D points
@@ -48,7 +50,6 @@ while cam.isOpened:
 
     ret, corners = return_dict["results"]
     
-
     if ret == True:
         print("Found points")
         objpoints.append(objp) # just add raw object point
@@ -57,11 +58,20 @@ while cam.isOpened:
 
         # draw and display the corners
         cv.drawChessboardCorners(img, (7,5), corners2, ret)
+        # print("--OBJECT POINTS--")
+        # print(objpoints)
+        # print(len(objpoints[0]))
+        # print("--IMAGE POINTS--")
+        # print(imgpoints)
+        # print(len(imgpoints[0]))
     else:
         print("No detection")
     cv.namedWindow("Camera", cv.WINDOW_KEEPRATIO)
     cv.resizeWindow("Camera", 1000, 1000)
     cv.imshow("Camera", img)
     cv.waitKey(1)
+
+ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+print(mtx)
 
 cam.release()
